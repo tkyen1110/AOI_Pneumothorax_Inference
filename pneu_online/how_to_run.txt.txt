@@ -1,0 +1,34 @@
+cd AOI_Pneumothorax_Inference/pneu_online
+
+1. Build docker image (only need to run once)
+  if the image name is pneu-online-images-v1.0, then run
+  ./pneu-online-images.sh build v1.0
+
+  if the image name is pneu-online-images-v2.0, then run
+  ./pneu-online-images.sh build v2.0
+
+The follow command use v2.0 as an example
+2. Run docker container (only need to run once)
+  ./pneu-online-images.sh run v2.0
+
+3. Execute docker container in another terminal
+   After "./pneu-online-images.sh run v2.0", if you want to enter container in anothr terminal
+   ./pneu-online-images.sh exec v2.0
+
+   If the error "Error response from daemon: Container xxx is not running" occurs, you need to
+   ./pneu-online-images.sh start v2.0
+   ./pneu-online-images.sh exec v2.0
+
+4. Exit docker container
+   You can either type in "exit" to exit the docker container or use Ctrl+p and Ctrl+q to exit.
+
+5. Remove docker container
+   ./pneu-online-images.sh rm v2.0
+
+   If the error "You cannot remove a running container xxx. Stop the container before attempting removal or force remove" occurs, you need to
+   ./pneu-online-images.sh stop v2.0
+   ./pneu-online-images.sh rm v2.0
+
+6. Remove docker image
+   You need to remove all containers before you remove the image.
+   ./pneu-online-images.sh rmi v2.0
