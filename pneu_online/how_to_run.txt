@@ -1,4 +1,7 @@
-cd AOI_Pneumothorax_Inference/pneu_online
+Put pneu-online-images.sh and pneu-online-images-v2.0.tar in ~/xxx/AOI_Pneumothorax_Inference/pneu_online
+(xxx can be any directory)
+
+cd ~/xxx/AOI_Pneumothorax_Inference/pneu_online
 
 1. Build docker image (only need to run once)
   if the image name is pneu-online-images-v1.0, then run
