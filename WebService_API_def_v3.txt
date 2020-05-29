@@ -1,0 +1,10 @@
+curl -X POST http://192.168.0.106:5050/ADV_pneu --header "Content-Type: application/json" --data '{"dcm": "0001-PNEUMO2013021701.dcm"}'
+
+
+curl -X POST http://61.219.26.5:8080/ADV_pneu --header "Content-Type: application/json" --data '{"dcm": "0001-PNEUMO2013021401.dcm"}'
+curl -X POST http://61.219.26.5:8080/ADV_pneu --header "Content-Type: application/json" --data '{"dcm": "0001-PNEUMO2013021701.dcm"}'
+curl -X POST http://61.219.26.5:8080/ADV_pneu --header "Content-Type: application/json" --data '{"dcm": "NORMAL0000401.dcm"}'
+
+curl -X POST http://localhost:5050/ADV_pneu --header "Content-Type: application/json" --data '{"dcm": "0001-PNEUMO2013021401.dcm"}'
+curl -X POST http://localhost:5050/ADV_pneu --header "Content-Type: application/json" --data '{"dcm": "0001-PNEUMO2013021701.dcm"}'
+curl -X POST http://localhost:5050/ADV_pneu --header "Content-Type: application/json" --data '{"dcm": "NORMAL0000401.dcm"}'
