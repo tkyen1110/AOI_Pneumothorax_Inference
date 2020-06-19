@@ -13,10 +13,11 @@ IFS='/' read -a array <<< "$HOST_AOI_PATH"
 AOI_DIR_NAME="${array[-1]}"
 echo "AOI_DIR_NAME   = "$AOI_DIR_NAME
 
+CUSTOMER="NCKU"
 VERSION=$2
 if [ "$2" == "" ]
 then
-    VERSION="v2.0"
+    VERSION="v2.1"
 else
     VERSION=$2
 fi
@@ -30,38 +31,57 @@ echo "CONTAINER_NAME = "$CONTAINER_NAME
 
 if [ "$1" == "build" ]
 then
-    echo "docker load --input pneu-online-images-$VERSION.tar"
-
     if [ "$VERSION" == "v1.0" ]
     then
         IMAGE_ID=f459d94c2aa1
     elif [ "$VERSION" == "v2.0" ]
     then
         IMAGE_ID=c05f7c3cc59b
+    elif [ "$VERSION" == "v2.1" ]
+    then
+        IMAGE_ID=fc3281ecb0ca
     fi
-    echo "docker tag $IMAGE_ID $IMAGE_NAME"
-    # echo "cat pneu-online-images-$VERSION.tar | docker import - $IMAGE_NAME"
+
+    echo "docker load --input pneu-online-images-$VERSION.tar"
+    echo "docker tag $IMAGE_ID"
 
     docker load --input pneu-online-images-$VERSION.tar
     docker tag $IMAGE_ID $IMAGE_NAME
-    # cat pneu-online-images-$VERSION.tar | docker import - $IMAGE_NAME
 
 elif [ "$1" = "run" ]
 then
-    echo "docker run --gpus all -it --name $CONTAINER_NAME -v $HOST_AOI_PATH/dicom:/tmp/data/dicom -v $HOST_AOI_PATH/result:/tmp/data/result"
-    echo "$IMAGE_NAME /bin/bash"
-    echo "mkdir $HOST_AOI_PATH/dicom"
-    echo "mkdir $HOST_AOI_PATH/result"
+    if [ "$CUSTOMER" == "NCKU" ]
+    then
+        DICOM_PATH=/mnt/datasets/pneu/dicom
+        RESULT_PATH=/mnt/datasets/pneu/result
 
-    mkdir $HOST_AOI_PATH/dicom
-    mkdir $HOST_AOI_PATH/result
-    
+        echo "sudo mkdir -p $DICOM_PATH"
+        echo "sudo mkdir -p $RESULT_PATH"
+        echo "sudo chown -R $USER:$USER /mnt"
+
+        sudo mkdir -p $DICOM_PATH
+        sudo mkdir -p $RESULT_PATH
+        sudo chown -R $USER:$USER /mnt
+    else
+        DICOM_PATH=$HOST_AOI_PATH/dicom
+        RESULT_PATH=$HOST_AOI_PATH/result
+
+        echo "mkdir -p $DICOM_PATH"
+        echo "mkdir -p $RESULT_PATH"
+
+        mkdir -p $DICOM_PATH
+        mkdir -p $RESULT_PATH
+    fi
+
+    echo "docker run --gpus all -it --name $CONTAINER_NAME -v $DICOM_PATH:/tmp/data/dicom -v $RESULT_PATH:/tmp/data/result"
+    echo "$IMAGE_NAME /bin/bash"
+
     # docker run --gpus all -it \
     # docker run --runtime=nvidia -it \
     docker run --gpus all -it \
         --name $CONTAINER_NAME \
-        -v $HOST_AOI_PATH/dicom:/tmp/data/dicom \
-        -v $HOST_AOI_PATH/result:/tmp/data/result \
+        -v $DICOM_PATH:/tmp/data/dicom \
+        -v $RESULT_PATH:/tmp/data/result \
         -p 5050:5050 \
         $IMAGE_NAME /bin/bash
         # --mount type=bind,source=$SCRIPT_PATH/.bashrc,target=/home/$USER/.bashrc \
