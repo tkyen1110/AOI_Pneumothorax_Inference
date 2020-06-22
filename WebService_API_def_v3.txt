@@ -1,3 +1,6 @@
+export CUDA_VISIBLE_DEVICES=gpu_id
+./docker-entrypoint.sh
+
 curl -X POST http://192.168.0.106:5050/ADV_pneu --header "Content-Type: application/json" --data '{"dcm": "0001-PNEUMO2013021701.dcm"}'
 
 
