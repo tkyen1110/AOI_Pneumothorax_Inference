@@ -1,0 +1,86 @@
+FROM pneu_online:v2.1 
+
+ARG USER=adev
+ARG UID=1000
+ARG GID=1000
+ARG HOME_NAME=adev
+
+ENV DISPLAY :11
+
+# RUN DEBIAN_FRONTEND=noninteractive && \
+#     apt-get update && \
+#     apt-get install -y sudo vim git wget curl unzip && \
+#     apt-get install -y net-tools iputils-ping && \
+#     apt-get install -y dirmngr apt-transport-https lsb-release ca-certificates && \
+#     # For opencv-python
+#     apt-get install -y libsm6 libxrender-dev && \
+#     # Install make
+#     apt-get install -y build-essential && \
+#     # Install apache2 webserver
+#     apt-get install -y apache2 && \
+#     ### Install Node.js
+#     # curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - && \
+#     curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash - && \
+#     # Install Node.js 12.x and npm
+#     apt-get install -y nodejs && \
+#     # Install development tools to build native addons
+#     apt-get install -y gcc g++ make && \
+#     # Install Yarn package manager
+#     curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && \
+#     echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list && \
+#     apt-get update && \
+#     apt-get install -y yarn
+
+# # Install python2.7 and python3.6
+# RUN apt-get install -y python python-dev && \
+#     apt-get install -y software-properties-common && \
+#     add-apt-repository -y ppa:deadsnakes/ppa && \
+#     apt-get update && \
+#     apt-get install -y python2.7 python-pip python-dev && \
+#     apt-get install -y python-yaml python-six python-matplotlib && \
+#     apt-get install -y python3.6 python3-pip python3.6-dev && \
+#     cd /usr/bin && \
+#     rm python3 && \
+#     ln -s python3.6 python3
+
+# RUN curl https://bootstrap.pypa.io/get-pip.py -o /root/get-pip.py && \
+#     python /root/get-pip.py && python3 /root/get-pip.py && \
+#     python3 /root/get-pip.py && \
+#     rm /root/get-pip.py
+
+# # Install python2.7 package
+# COPY requirements.txt /root/
+# RUN pip2 install pillow==5.4.1 opencv-python==3.4.2.16 && \
+#     pip2 install pyinstaller==3.6 && \
+#     pip2 install -r /root/requirements.txt && \
+#     rm /root/requirements.txt
+
+# # Install python3.6 package
+# RUN pip3 install afs2-model afs2-datasource==2.1.28 && \
+#     pip3 install flask && \
+#     pip3 install psutil
+
+# Set the home directory to our user's home.
+ENV HOME="/home/$HOME_NAME"
+ENV AOI_DIR_NAME="AOI_PCB_Inference"
+
+RUN echo "Create $USER account" &&\
+    # Create the home directory for the new $USER
+    mkdir -p $HOME &&\
+    # Create an $USER so our program doesn't run as root.
+    groupadd -r -g $GID $USER &&\
+    useradd -r -g $USER -G sudo -u $UID -d $HOME -s /sbin/nologin -c "Docker image user" $USER &&\
+    # Set root user no password
+    mkdir -p /etc/sudoers.d &&\
+    echo "$USER ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
+    chmod 0440 /etc/sudoers.d/$USER && \
+    # Chown all the files to the $USER
+    chown -R $USER:$USER $HOME
+
+# Change to the $USER
+WORKDIR $HOME
+USER $USER
+
+# EXPOSE 80
+# EXPOSE 5000
+# EXPOSE 8080
