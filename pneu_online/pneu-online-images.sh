@@ -13,7 +13,7 @@ IFS='/' read -a array <<< "$HOST_AOI_PATH"
 AOI_DIR_NAME="${array[-1]}"
 echo "AOI_DIR_NAME   = "$AOI_DIR_NAME
 
-CUSTOMER="NCKU"
+CUSTOMER=""
 VERSION=$2
 if [ "$2" == "" ]
 then
