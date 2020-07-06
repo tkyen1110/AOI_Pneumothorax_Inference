@@ -17,7 +17,7 @@ CUSTOMER=""
 VERSION=$2
 if [ "$2" == "" ]
 then
-    VERSION="v2.1"
+    VERSION="v2.2"
 else
     VERSION=$2
 fi
@@ -40,6 +40,9 @@ then
     elif [ "$VERSION" == "v2.1" ]
     then
         IMAGE_ID=fc3281ecb0ca
+    elif [ "$VERSION" == "v2.2" ]
+    then
+        IMAGE_ID=85ad2c715b9e
     fi
 
     echo "docker load --input pneu-online-images-$VERSION.tar"
@@ -52,34 +55,52 @@ elif [ "$1" = "run" ]
 then
     if [ "$CUSTOMER" == "NCKU" ]
     then
+        CONFIG_PATH=/mnt/datasets/pneu/config
         DICOM_PATH=/mnt/datasets/pneu/dicom
         RESULT_PATH=/mnt/datasets/pneu/result
 
+        echo "sudo mkdir -p $CONFIG_PATH"
         echo "sudo mkdir -p $DICOM_PATH"
         echo "sudo mkdir -p $RESULT_PATH"
         echo "sudo chown -R $USER:$USER /mnt"
 
+        sudo mkdir -p $CONFIG_PATH
         sudo mkdir -p $DICOM_PATH
         sudo mkdir -p $RESULT_PATH
         sudo chown -R $USER:$USER /mnt
     else
+        CONFIG_PATH=$HOST_AOI_PATH/config
         DICOM_PATH=$HOST_AOI_PATH/dicom
         RESULT_PATH=$HOST_AOI_PATH/result
 
+        echo "mkdir -p $CONFIG_PATH"
         echo "mkdir -p $DICOM_PATH"
         echo "mkdir -p $RESULT_PATH"
 
+        mkdir -p $CONFIG_PATH
         mkdir -p $DICOM_PATH
         mkdir -p $RESULT_PATH
     fi
 
-    echo "docker run --gpus all -it --name $CONTAINER_NAME -v $DICOM_PATH:/tmp/data/dicom -v $RESULT_PATH:/tmp/data/result"
-    echo "$IMAGE_NAME /bin/bash"
+    echo "docker run --name $CONTAINER_NAME $IMAGE_NAME"
+    docker run --name $CONTAINER_NAME $IMAGE_NAME
 
-    # docker run --gpus all -it \
+    echo "docker cp $CONTAINER_NAME:/tmp/data/config/config.yaml $CONFIG_PATH"
+    docker cp $CONTAINER_NAME:/tmp/data/config/config.yaml $CONFIG_PATH
+
+    echo "docker stop $CONTAINER_NAME"
+    docker stop $CONTAINER_NAME
+
+    echo "docker rm $CONTAINER_NAME"
+    docker rm $CONTAINER_NAME
+
+    echo "docker run --gpus all -it --name $CONTAINER_NAME -v $CONFIG_PATH:/tmp/data/config -v $DICOM_PATH:/tmp/data/dicom -v $RESULT_PATH:/tmp/data/result"
+    echo "-p 5050:5050 $IMAGE_NAME /bin/bash"
+
     # docker run --runtime=nvidia -it \
     docker run --gpus all -it \
         --name $CONTAINER_NAME \
+        -v $CONFIG_PATH:/tmp/data/config \
         -v $DICOM_PATH:/tmp/data/dicom \
         -v $RESULT_PATH:/tmp/data/result \
         -p 5050:5050 \
