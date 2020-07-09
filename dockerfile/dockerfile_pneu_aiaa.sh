@@ -90,19 +90,32 @@ then
         mkdir -p $RESULT_PATH
     fi
 
+    echo "docker run --name $CONTAINER_NAME $IMAGE_NAME"
+    docker run --name $CONTAINER_NAME $IMAGE_NAME
+
+    echo "docker cp $CONTAINER_NAME:/tmp/data/config/config.yaml $CONFIG_PATH"
+    docker cp $CONTAINER_NAME:/tmp/data/config/config.yaml $CONFIG_PATH
+
+    echo "docker stop $CONTAINER_NAME"
+    docker stop $CONTAINER_NAME
+
+    echo "docker rm $CONTAINER_NAME"
+    docker rm $CONTAINER_NAME
+
     echo "docker run --gpus all -it --name $CONTAINER_NAME -v /tmp/.X11-unix:/tmp/.X11-unix -v $HOST_AOI_PATH/pneu_aiaa:/home/$HOME_NAME/pneu_aiaa"
-    echo "-v $DICOM_PATH:/tmp/data/dicom -v $RESULT_PATH:/tmp/data/result"
+    echo "-v $CONFIG_PATH:/tmp/data/config -v $DICOM_PATH:/tmp/data/dicom -v $RESULT_PATH:/tmp/data/result"
     echo "--mount type=bind,source=$SCRIPT_PATH/.bashrc,target=/home/$HOME_NAME/.bashrc -p 81:5000 -p 8081:5050 $IMAGE_NAME /bin/bash"
 
     docker run --gpus all -it \
         --name $CONTAINER_NAME \
         -v /tmp/.X11-unix:/tmp/.X11-unix \
         -v $HOST_AOI_PATH/pneu_aiaa:/home/$HOME_NAME/pneu_aiaa \
+        -v $CONFIG_PATH:/tmp/data/config \
         -v $DICOM_PATH:/tmp/data/dicom \
         -v $RESULT_PATH:/tmp/data/result \
         --mount type=bind,source=$SCRIPT_PATH/.bashrc,target=/home/$HOME_NAME/.bashrc \
-        -p 81:5000 \
-        -p 8081:5050 \
+        -p 8080:5000 \
+        -p 5050:5050 \
         $IMAGE_NAME /bin/bash
 
 elif [ "$1" = "exec" ]

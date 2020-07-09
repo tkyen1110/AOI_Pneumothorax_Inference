@@ -18,7 +18,7 @@ from botocore.exceptions import ClientError, EndpointConnectionError
 
 docker_data_dir = '/tmp/data'
 docker_dicom_dir = '/tmp/data/dicom'
-config_file = '/tmp/data/config.yaml'
+config_file = '/tmp/data/config/config.yaml'
 
 def download_s3_file(endpoint, access_key, secret_key, bucket, dicom_filepath, dicom_file):
     config = Config(signature_version='s3')
