@@ -94,11 +94,11 @@ then
     echo "docker rm $CONTAINER_NAME"
     docker rm $CONTAINER_NAME
 
-    echo "docker run --gpus all -it --name $CONTAINER_NAME -v $CONFIG_PATH:/tmp/data/config -v $DICOM_PATH:/tmp/data/dicom -v $RESULT_PATH:/tmp/data/result"
-    echo "-p 5050:5050 $IMAGE_NAME /bin/bash"
+    echo "docker run --gpus all -itd --name $CONTAINER_NAME -v $CONFIG_PATH:/tmp/data/config -v $DICOM_PATH:/tmp/data/dicom -v $RESULT_PATH:/tmp/data/result"
+    echo "-p 8082:5050 $IMAGE_NAME /bin/bash"
 
     # docker run --runtime=nvidia -it \
-    docker run --gpus all -it \
+    docker run --gpus all -itd \
         --name $CONTAINER_NAME \
         -v $CONFIG_PATH:/tmp/data/config \
         -v $DICOM_PATH:/tmp/data/dicom \
