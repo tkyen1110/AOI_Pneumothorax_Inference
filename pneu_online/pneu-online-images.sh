@@ -17,7 +17,7 @@ CUSTOMER=""
 VERSION=$2
 if [ "$2" == "" ]
 then
-    VERSION="v2.2"
+    VERSION="v2.3"
 else
     VERSION=$2
 fi
@@ -43,6 +43,9 @@ then
     elif [ "$VERSION" == "v2.2" ]
     then
         IMAGE_ID=85ad2c715b9e
+    elif [ "$VERSION" == "v2.3" ]
+    then
+        IMAGE_ID=113339a13208
     fi
 
     echo "docker load --input pneu-online-images-$VERSION.tar"
@@ -95,7 +98,7 @@ then
     docker rm $CONTAINER_NAME
 
     echo "docker run --gpus all -itd --name $CONTAINER_NAME -v $CONFIG_PATH:/tmp/data/config -v $DICOM_PATH:/tmp/data/dicom -v $RESULT_PATH:/tmp/data/result"
-    echo "-p 8082:5050 $IMAGE_NAME /bin/bash"
+    echo "-p 5050:5050 $IMAGE_NAME /bin/bash"
 
     # docker run --runtime=nvidia -it \
     docker run --gpus all -itd \
