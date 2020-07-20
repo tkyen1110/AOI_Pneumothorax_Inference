@@ -17,7 +17,7 @@ CUSTOMER=""
 VERSION=$2
 if [ "$2" == "" ]
 then
-    VERSION="v2.3"
+    VERSION="v2.4"
 else
     VERSION=$2
 fi
@@ -46,6 +46,9 @@ then
     elif [ "$VERSION" == "v2.3" ]
     then
         IMAGE_ID=113339a13208
+    elif [ "$VERSION" == "v2.4" ]
+    then
+        IMAGE_ID=55afb6962015
     fi
 
     echo "docker load --input pneu-online-images-$VERSION.tar"
