@@ -1,4 +1,11 @@
 #!/bin/bash
+
+# Color
+NC='\033[0m'
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+
 # Absolute path to this script.
 # e.g. /home/ubuntu/workspaces/AOI_LinKou_Inference/dockerfile/dockerfile_aoi.sh
 SCRIPT=$(readlink -f "$0")
@@ -17,11 +24,12 @@ IFS='/' read -a array <<< "$HOST_AOI_PATH"
 AOI_DIR_NAME="${array[-1]}"
 echo "AOI_DIR_NAME   = "$AOI_DIR_NAME
 
-
+CUSTOMER=""
+# CUSTOMER="NCKU"
 VERSION=$2
 if [ "$2" == "" ]
 then
-    VERSION="v0"
+    VERSION="v1"
 else
     VERSION=$2
 fi
@@ -39,10 +47,23 @@ if [ -z "$HOME_NAME" ]
 then
     HOME_NAME=$USER
 fi
-CUSTOMER=""
-# CUSTOMER="NCKU"
+
 echo "HOME_NAME       = "$HOME_NAME
 echo "CUSTOMER        = "$CUSTOMER
+
+IFS=$'\n'
+function Fun_EvalCmd()
+{
+    cmd_list=$1
+    i=0
+    for cmd in ${cmd_list[*]}
+    do
+        ((i+=1))
+        printf "${GREEN}${cmd}${NC}\n"
+        eval $cmd
+    done
+}
+
 
 if [ "$1" == "build" ]
 then
@@ -51,13 +72,16 @@ then
     echo "docker build --build-arg USER=$USER --build-arg UID=$UID --build-arg GID=$GID --build-arg HOME_NAME=$HOME_NAME"
     echo "-f $DOCKERFILE_NAME -t $IMAGE_NAME ."
 
-    docker build \
-        --build-arg USER=$USER \
-        --build-arg UID=$UID \
-        --build-arg GID=$GID \
-        --build-arg HOME_NAME=$HOME_NAME \
-        -f $DOCKERFILE_NAME \
-        -t $IMAGE_NAME .
+    lCmdList=(
+                "docker build \
+                    --build-arg USER=$USER \
+                    --build-arg UID=$UID \
+                    --build-arg GID=$GID \
+                    --build-arg HOME_NAME=$HOME_NAME \
+                    -f $DOCKERFILE_NAME \
+                    -t $IMAGE_NAME ."
+             )
+    Fun_EvalCmd "${lCmdList[*]}"
 
 elif [ "$1" = "run" ]
 then
@@ -67,79 +91,81 @@ then
         DICOM_PATH=/mnt/datasets/pneu/dicom
         RESULT_PATH=/mnt/datasets/pneu/result
 
-        echo "sudo mkdir -p $CONFIG_PATH"
-        echo "sudo mkdir -p $DICOM_PATH"
-        echo "sudo mkdir -p $RESULT_PATH"
-        echo "sudo chown -R $USER:$USER /mnt"
+        lCmdList=(
+                    "sudo mkdir -p $CONFIG_PATH" \
+                    "sudo mkdir -p $DICOM_PATH" \
+                    "sudo mkdir -p $RESULT_PATH" \
+                    "sudo chown -R $USER:$USER /mnt"
+                 )
+        Fun_EvalCmd "${lCmdList[*]}"
 
-        sudo mkdir -p $CONFIG_PATH
-        sudo mkdir -p $DICOM_PATH
-        sudo mkdir -p $RESULT_PATH
-        sudo chown -R $USER:$USER /mnt
     else
         CONFIG_PATH=$HOST_AOI_PATH/config
         DICOM_PATH=$HOST_AOI_PATH/dicom
         RESULT_PATH=$HOST_AOI_PATH/result
 
-        echo "mkdir -p $CONFIG_PATH"
-        echo "mkdir -p $DICOM_PATH"
-        echo "mkdir -p $RESULT_PATH"
+        lCmdList=(
+                    "mkdir -p $CONFIG_PATH" \
+                    "mkdir -p $DICOM_PATH" \
+                    "mkdir -p $RESULT_PATH"
+                 )
+        Fun_EvalCmd "${lCmdList[*]}"
 
-        mkdir -p $CONFIG_PATH
-        mkdir -p $DICOM_PATH
-        mkdir -p $RESULT_PATH
     fi
 
-    echo "docker run --name $CONTAINER_NAME $IMAGE_NAME"
-    docker run --name $CONTAINER_NAME $IMAGE_NAME
+    lCmdList=(
+                "docker run --name $CONTAINER_NAME $IMAGE_NAME" \
+                "docker cp $CONTAINER_NAME:/tmp/data/config/config.yaml $CONFIG_PATH" \
+                "docker stop $CONTAINER_NAME" \
+                "docker rm $CONTAINER_NAME" \
+                "docker run --gpus all -itd \
+                    --name $CONTAINER_NAME \
+                    -v /tmp/.X11-unix:/tmp/.X11-unix \
+                    -v $HOST_AOI_PATH/pneu_aiaa:/home/$HOME_NAME/pneu_aiaa \
+                    -v $CONFIG_PATH:/tmp/data/config \
+                    -v $DICOM_PATH:/tmp/data/dicom \
+                    -v $RESULT_PATH:/tmp/data/result \
+                    --mount type=bind,source=$SCRIPT_PATH/.bashrc,target=/home/$HOME_NAME/.bashrc \
+                    -p 8080:5000 \
+                    $IMAGE_NAME /bin/bash"
+             )
+    Fun_EvalCmd "${lCmdList[*]}"
 
-    echo "docker cp $CONTAINER_NAME:/tmp/data/config/config.yaml $CONFIG_PATH"
-    docker cp $CONTAINER_NAME:/tmp/data/config/config.yaml $CONFIG_PATH
-
-    echo "docker stop $CONTAINER_NAME"
-    docker stop $CONTAINER_NAME
-
-    echo "docker rm $CONTAINER_NAME"
-    docker rm $CONTAINER_NAME
-
-    echo "docker run --gpus all -itd --name $CONTAINER_NAME -v /tmp/.X11-unix:/tmp/.X11-unix -v $HOST_AOI_PATH/pneu_aiaa:/home/$HOME_NAME/pneu_aiaa"
-    echo "-v $CONFIG_PATH:/tmp/data/config -v $DICOM_PATH:/tmp/data/dicom -v $RESULT_PATH:/tmp/data/result"
-    echo "--mount type=bind,source=$SCRIPT_PATH/.bashrc,target=/home/$HOME_NAME/.bashrc -p 81:5000 -p 8081:5050 $IMAGE_NAME /bin/bash"
-
-    docker run --gpus all -itd \
-        --name $CONTAINER_NAME \
-        -v /tmp/.X11-unix:/tmp/.X11-unix \
-        -v $HOST_AOI_PATH/pneu_aiaa:/home/$HOME_NAME/pneu_aiaa \
-        -v $CONFIG_PATH:/tmp/data/config \
-        -v $DICOM_PATH:/tmp/data/dicom \
-        -v $RESULT_PATH:/tmp/data/result \
-        --mount type=bind,source=$SCRIPT_PATH/.bashrc,target=/home/$HOME_NAME/.bashrc \
-        -p 8080:5000 \
-        -p 80:5050 \
-        $IMAGE_NAME /bin/bash
+    # -p 80:5050 \
 
 elif [ "$1" = "exec" ]
 then
-    echo "docker exec -it $CONTAINER_NAME /bin/bash"
-    docker exec -it $CONTAINER_NAME /bin/bash
+    lCmdList=(
+                "docker exec -it $CONTAINER_NAME /bin/bash"
+             )
+    Fun_EvalCmd "${lCmdList[*]}"
 
 elif [ "$1" = "start" ]
 then
-    echo "docker start $CONTAINER_NAME"
-    docker start $CONTAINER_NAME
+    lCmdList=(
+                "docker start $CONTAINER_NAME"
+             )
+    Fun_EvalCmd "${lCmdList[*]}"
 
 elif [ "$1" = "stop" ]
 then
-    echo "docker stop $CONTAINER_NAME"
-    docker stop $CONTAINER_NAME
+    lCmdList=(
+                "docker stop $CONTAINER_NAME"
+             )
+    Fun_EvalCmd "${lCmdList[*]}"
 
 elif [ "$1" = "rm" ]
 then
-    echo "docker rm $CONTAINER_NAME"
-    docker rm $CONTAINER_NAME
+    lCmdList=(
+                "docker rm $CONTAINER_NAME"
+             )
+    Fun_EvalCmd "${lCmdList[*]}"
 
 elif [ "$1" = "rmi" ]
 then
-    echo "docker rmi $IMAGE_NAME"
-    docker rmi $IMAGE_NAME
+    lCmdList=(
+                "docker rmi $IMAGE_NAME"
+             )
+    Fun_EvalCmd "${lCmdList[*]}"
+
 fi

@@ -1,11 +1,22 @@
 #!/bin/bash
+
+# Color
+NC='\033[0m'
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+
 # Absolute path to this script.
 # e.g. /home/ubuntu/workspaces/AOI_LinKou_Inference/dockerfile/dockerfile_aoi.sh
 SCRIPT=$(readlink -f "$0")
 
 # Absolute path this script is in.
 # e.g. /home/ubuntu/workspaces/AOI_LinKou_Inference/dockerfile
-HOST_AOI_PATH=$(dirname "$SCRIPT")
+SCRIPT_PATH=$(dirname "$SCRIPT")
+
+# Absolute path to the AOI path
+# e.g. /home/ubuntu/workspaces/AOI_LinKou_Inference
+HOST_AOI_PATH=$(dirname "$SCRIPT_PATH")
 echo "HOST_AOI_PATH  = "$HOST_AOI_PATH
 
 # AOI directory name
@@ -14,54 +25,46 @@ AOI_DIR_NAME="${array[-1]}"
 echo "AOI_DIR_NAME   = "$AOI_DIR_NAME
 
 CUSTOMER=""
+# CUSTOMER="NCKU"
 VERSION=$2
 if [ "$2" == "" ]
 then
-    VERSION="v2.6"
+    VERSION="v3.3"
 else
     VERSION=$2
 fi
 echo "VERSION        = "$VERSION
 
 IMAGE_NAME="pneu-online:$VERSION"
-CONTAINER_NAME="pneu_online_$VERSION"
+CONTAINER_NAME="pneu-online-$VERSION"
 echo "IMAGE_NAME     = "$IMAGE_NAME
 echo "CONTAINER_NAME = "$CONTAINER_NAME
+
+IFS=$'\n'
+function Fun_EvalCmd()
+{
+    cmd_list=$1
+    i=0
+    for cmd in ${cmd_list[*]}
+    do
+        ((i+=1))
+        printf "${GREEN}${cmd}${NC}\n"
+        eval $cmd
+    done
+}
 
 
 if [ "$1" == "build" ]
 then
-    if [ "$VERSION" == "v1.0" ]
-    then
-        IMAGE_ID=f459d94c2aa1
-    elif [ "$VERSION" == "v2.0" ]
-    then
-        IMAGE_ID=c05f7c3cc59b
-    elif [ "$VERSION" == "v2.1" ]
-    then
-        IMAGE_ID=fc3281ecb0ca
-    elif [ "$VERSION" == "v2.2" ]
-    then
-        IMAGE_ID=85ad2c715b9e
-    elif [ "$VERSION" == "v2.3" ]
-    then
-        IMAGE_ID=113339a13208
-    elif [ "$VERSION" == "v2.4" ]
-    then
-        IMAGE_ID=55afb6962015
-    elif [ "$VERSION" == "v2.5" ]
-    then
-        IMAGE_ID=e05fab99d139
-    elif [ "$VERSION" == "v2.6" ]
-    then
-        IMAGE_ID=c257558432a9
-    fi
+    # docker load --input pneu-online-images-$VERSION.tar
+    # docker tag $IMAGE_ID $IMAGE_NAME
 
-    echo "docker load --input pneu-online-images-$VERSION.tar"
-    echo "docker tag $IMAGE_ID"
-
-    docker load --input pneu-online-images-$VERSION.tar
-    docker tag $IMAGE_ID $IMAGE_NAME
+    lCmdList=(
+                "unzip twcc_online_$VERSION.zip" \
+                "cd twcc_online_$VERSION/dockerfile" \
+                "bash dockerfile-pneu-build.sh"
+             )
+    Fun_EvalCmd "${lCmdList[*]}"
 
 elif [ "$1" = "run" ]
 then
@@ -71,76 +74,79 @@ then
         DICOM_PATH=/mnt/datasets/pneu/dicom
         RESULT_PATH=/mnt/datasets/pneu/result
 
-        echo "sudo mkdir -p $CONFIG_PATH"
-        echo "sudo mkdir -p $DICOM_PATH"
-        echo "sudo mkdir -p $RESULT_PATH"
-        echo "sudo chown -R $USER:$USER /mnt"
+        lCmdList=(
+                    "sudo mkdir -p $CONFIG_PATH" \
+                    "sudo mkdir -p $DICOM_PATH" \
+                    "sudo mkdir -p $RESULT_PATH" \
+                    "sudo chown -R $USER:$USER /mnt"
+                 )
+        Fun_EvalCmd "${lCmdList[*]}"
 
-        sudo mkdir -p $CONFIG_PATH
-        sudo mkdir -p $DICOM_PATH
-        sudo mkdir -p $RESULT_PATH
-        sudo chown -R $USER:$USER /mnt
     else
         CONFIG_PATH=$HOST_AOI_PATH/config
         DICOM_PATH=$HOST_AOI_PATH/dicom
         RESULT_PATH=$HOST_AOI_PATH/result
 
-        echo "mkdir -p $CONFIG_PATH"
-        echo "mkdir -p $DICOM_PATH"
-        echo "mkdir -p $RESULT_PATH"
+        lCmdList=(
+                    "mkdir -p $CONFIG_PATH" \
+                    "mkdir -p $DICOM_PATH" \
+                    "mkdir -p $RESULT_PATH"
+                 )
+        Fun_EvalCmd "${lCmdList[*]}"
 
-        mkdir -p $CONFIG_PATH
-        mkdir -p $DICOM_PATH
-        mkdir -p $RESULT_PATH
     fi
 
-    echo "docker run --name $CONTAINER_NAME $IMAGE_NAME"
-    docker run --name $CONTAINER_NAME $IMAGE_NAME
-
-    echo "docker cp $CONTAINER_NAME:/tmp/data/config/config.yaml $CONFIG_PATH"
-    docker cp $CONTAINER_NAME:/tmp/data/config/config.yaml $CONFIG_PATH
-
-    echo "docker stop $CONTAINER_NAME"
-    docker stop $CONTAINER_NAME
-
-    echo "docker rm $CONTAINER_NAME"
-    docker rm $CONTAINER_NAME
-
-    echo "docker run --gpus all -itd --name $CONTAINER_NAME -v $CONFIG_PATH:/tmp/data/config -v $DICOM_PATH:/tmp/data/dicom -v $RESULT_PATH:/tmp/data/result"
-    echo "-p 5050:5050 $IMAGE_NAME /bin/bash"
+    lCmdList=(
+                "docker run --name $CONTAINER_NAME $IMAGE_NAME" \
+                "docker cp $CONTAINER_NAME:/tmp/data/config/config.yaml $CONFIG_PATH" \
+                "docker stop $CONTAINER_NAME" \
+                "docker rm $CONTAINER_NAME" \
+                "docker run --gpus all -itd \
+                    --name $CONTAINER_NAME \
+                    -v $CONFIG_PATH:/tmp/data/config \
+                    -v $DICOM_PATH:/tmp/data/dicom \
+                    -v $RESULT_PATH:/tmp/data/result \
+                    -p 5050:5050 \
+                    $IMAGE_NAME /bin/bash"
+             )
+    Fun_EvalCmd "${lCmdList[*]}"
 
     # docker run --runtime=nvidia -it \
-    docker run --gpus all -itd \
-        --name $CONTAINER_NAME \
-        -v $CONFIG_PATH:/tmp/data/config \
-        -v $DICOM_PATH:/tmp/data/dicom \
-        -v $RESULT_PATH:/tmp/data/result \
-        -p 5050:5050 \
-        $IMAGE_NAME /bin/bash
-        # --mount type=bind,source=$SCRIPT_PATH/.bashrc,target=/home/$USER/.bashrc \
+    # --mount type=bind,source=$SCRIPT_PATH/.bashrc,target=/home/$USER/.bashrc \
 
 elif [ "$1" = "exec" ]
 then
-    echo "docker exec -it $CONTAINER_NAME /bin/bash"
-    docker exec -it $CONTAINER_NAME /bin/bash
+    lCmdList=(
+                "docker exec -it $CONTAINER_NAME /bin/bash"
+             )
+    Fun_EvalCmd "${lCmdList[*]}"
 
 elif [ "$1" = "start" ]
 then
-    echo "docker start $CONTAINER_NAME"
-    docker start $CONTAINER_NAME
+    lCmdList=(
+                "docker start $CONTAINER_NAME"
+             )
+    Fun_EvalCmd "${lCmdList[*]}"
 
 elif [ "$1" = "stop" ]
 then
-    echo "docker stop $CONTAINER_NAME"
-    docker stop $CONTAINER_NAME
+    lCmdList=(
+                "docker stop $CONTAINER_NAME"
+             )
+    Fun_EvalCmd "${lCmdList[*]}"
 
 elif [ "$1" = "rm" ]
 then
-    echo "docker rm $CONTAINER_NAME"
-    docker rm $CONTAINER_NAME
+    lCmdList=(
+                "docker rm $CONTAINER_NAME"
+             )
+    Fun_EvalCmd "${lCmdList[*]}"
 
 elif [ "$1" = "rmi" ]
 then
-    echo "docker rmi $IMAGE_NAME"
-    docker rmi $IMAGE_NAME
+    lCmdList=(
+                "docker rmi $IMAGE_NAME"
+             )
+    Fun_EvalCmd "${lCmdList[*]}"
+
 fi
