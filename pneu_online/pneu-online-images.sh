@@ -23,7 +23,7 @@ else
 fi
 echo "VERSION        = "$VERSION
 
-IMAGE_NAME="pneu_online:$VERSION"
+IMAGE_NAME="pneu-online:$VERSION"
 CONTAINER_NAME="pneu_online_$VERSION"
 echo "IMAGE_NAME     = "$IMAGE_NAME
 echo "CONTAINER_NAME = "$CONTAINER_NAME
