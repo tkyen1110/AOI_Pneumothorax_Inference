@@ -83,9 +83,9 @@ then
         Fun_EvalCmd "${lCmdList[*]}"
 
     else
-        CONFIG_PATH=$HOST_AOI_PATH/config
-        DICOM_PATH=$HOST_AOI_PATH/dicom
-        RESULT_PATH=$HOST_AOI_PATH/result
+        CONFIG_PATH=$SCRIPT_PATH/config
+        DICOM_PATH=$SCRIPT_PATH/dicom
+        RESULT_PATH=$SCRIPT_PATH/result
 
         lCmdList=(
                     "mkdir -p $CONFIG_PATH" \
