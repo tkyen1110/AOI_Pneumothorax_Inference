@@ -1,35 +1,35 @@
 #!/bin/bash
 # https://www.cyberciti.biz/faq/unix-howto-read-line-by-line-from-file/
-echo "Please input no_pneu log file name: (ex: 775_no_pneu.txt)"
+echo "Please input pneu log file name: (ex: 775_pneu.txt)"
 read logfile
 
-echo "Please input no_pneu folder name: (ex: 775_no_pneu)"
-read no_pneu_folder
+echo "Please input pneu folder name: (ex: 775_pneu)"
+read pneu_folder
 
 IFS="." read -a filename <<< $logfile
-fp_png_folder="${filename[0]}_fp_png"
-fp_vis_folder="${filename[0]}_fp_vis"
-fp_file="${filename[0]}_fp"
-tn_file="${filename[0]}_tn"
+fn_png_folder="${filename[0]}_fn_png"
+fn_vis_folder="${filename[0]}_fn_vis"
+tp_file="${filename[0]}_tp"
+fn_file="${filename[0]}_fn"
 
-if [ ! -d $fp_png_folder ]
+if [ ! -d $fn_png_folder ]
 then
-  mkdir $fp_png_folder
+  mkdir $fn_png_folder
 fi
 
-if [ ! -d $fp_vis_folder ]
+if [ ! -d $fn_vis_folder ]
 then
-  mkdir $fp_vis_folder
+  mkdir $fn_vis_folder
 fi
 
-if [ -f $fp_file ]
+if [ -f $tp_file ]
 then
-  rm $fp_file
+  rm $tp_file
 fi
 
-if [ -f $tn_file ]
+if [ -f $fn_file ]
 then
-  rm $tn_file
+  rm $fn_file
 fi
 
 total=0
@@ -51,7 +51,13 @@ do
     IFS="/" read -a element <<< ${elements[4]}
     file_png=${element[-1]}
 
-    echo $file_png >> $tn_file
+    # I00291013740_1_0.729.png
+    IFS="/" read -a element <<< ${elements[3]}
+    file_vis=${element[-3]}/${element[-2]}/${element[-1]}
+
+    # cp $pneu_folder/$file_png $fn_png_folder
+    # cp $file_vis $fn_vis_folder
+    echo $file_png >> $fn_file
   elif [[ $line == *"\"signal\":\"1\""* ]];
   then
     ((pneu+=1))
@@ -63,13 +69,7 @@ do
     IFS="/" read -a element <<< ${elements[4]}
     file_png=${element[-1]}
 
-    # I00291013740_1_0.729.png
-    IFS="/" read -a element <<< ${elements[3]}
-    file_vis=${element[-3]}/${element[-2]}/${element[-1]}
-
-    # cp $no_pneu_folder/$file_png $fp_png_folder
-    # cp $file_vis $fp_vis_folder
-    echo $file_png >> $fp_file
+    echo $file_png >> $tp_file
   else
     ((error+=1))
   fi
