@@ -15,7 +15,7 @@ error=0
 echo "Total ${#images[@]} images"
 for (( i=0; i<${#images[@]}; i+=1 ))
 do
-  # if [ $i -ge 694 ];
+  # if [[ $i -ge 0 && $i -le 999 ]];
   # then
   #   echo $i, ${images[$i]}
   # else

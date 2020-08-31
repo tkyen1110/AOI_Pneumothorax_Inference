@@ -9,8 +9,8 @@ read pneu_folder
 IFS="." read -a filename <<< $logfile
 fn_png_folder="${filename[0]}_fn_png"
 fn_vis_folder="${filename[0]}_fn_vis"
-tp_file="${filename[0]}_tp"
-fn_file="${filename[0]}_fn"
+tp_file="${filename[0]}_tp.txt"
+fn_file="${filename[0]}_fn.txt"
 
 if [ ! -d $fn_png_folder ]
 then
