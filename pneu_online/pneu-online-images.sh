@@ -29,7 +29,7 @@ CUSTOMER=""
 VERSION=$2
 if [ "$2" == "" ]
 then
-    VERSION="v3.3"
+    VERSION="v5.4"
 else
     VERSION=$2
 fi
@@ -107,7 +107,8 @@ then
                     -v $DICOM_PATH:/tmp/data/dicom \
                     -v $RESULT_PATH:/tmp/data/result \
                     -p 5050:5050 \
-                    $IMAGE_NAME /bin/bash"
+                    $IMAGE_NAME /bin/bash" \
+                "docker exec -it $CONTAINER_NAME /bin/bash"
              )
     Fun_EvalCmd "${lCmdList[*]}"
 
