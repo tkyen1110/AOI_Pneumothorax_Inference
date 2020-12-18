@@ -102,7 +102,10 @@ async def pneu_inference(request):
 
             path = config_dict.get('PATH', None)
             docker_heatmap_json_path = host_heatmap_json_path.replace(path, docker_data_dir)
-            return response.json(json.load(open(docker_heatmap_json_path)))
+            json_dict = json.load(open(docker_heatmap_json_path))
+            for i in range(len(json_dict["shapes"])):
+                json_dict["shapes"][i]["label"] = "pneumothorax_seg"
+            return response.json(json_dict)
         else:
             empty_response["message"] = "No AIAA json file is created"
             if signal == "0":
