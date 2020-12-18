@@ -16,7 +16,7 @@ from botocore.utils import is_valid_endpoint_url
 from botocore.client import Config
 from botocore.exceptions import ClientError, EndpointConnectionError
 
-docker_data_dir = '/tmp/data'
+docker_data_dir = '/tmp/data/'
 docker_dicom_dir = '/tmp/data/dicom'
 config_file = '/tmp/data/config/config.yaml'
 

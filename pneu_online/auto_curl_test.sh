@@ -12,7 +12,7 @@ do
   for (( i=0; i<${#images[@]}; i+=1 ))
   do
     echo $i, ${images[$i]}
-    cmd="curl -X POST http://203.145.222.39:5050/ADV_pneu --header \"Content-Type: application/json\" --data '{\"dcm\": \"${images[$i]}\"}'"
+    cmd="curl -X POST http://203.145.222.39:8080/ADV_pneu --header \"Content-Type: application/json\" --data '{\"dcm\": \"${images[$i]}\"}'"
     result=`eval $cmd`
 
     if [ "$i" = "0" ]

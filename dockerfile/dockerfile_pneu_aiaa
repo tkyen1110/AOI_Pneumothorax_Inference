@@ -1,4 +1,4 @@
-FROM pneu-online:v3.3
+FROM pneu-online:v7.2
 
 # ARG USER=adev
 # ARG UID=1000

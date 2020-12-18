@@ -29,7 +29,7 @@ CUSTOMER=""
 VERSION=$2
 if [ "$2" == "" ]
 then
-    VERSION="v5.4"
+    VERSION="v7.2"
 else
     VERSION=$2
 fi
@@ -106,7 +106,7 @@ then
                     -v $CONFIG_PATH:/tmp/data/config \
                     -v $DICOM_PATH:/tmp/data/dicom \
                     -v $RESULT_PATH:/tmp/data/result \
-                    -p 5050:5050 \
+                    -p 8080:5050 \
                     $IMAGE_NAME /bin/bash" \
                 "docker exec -it $CONTAINER_NAME /bin/bash"
              )

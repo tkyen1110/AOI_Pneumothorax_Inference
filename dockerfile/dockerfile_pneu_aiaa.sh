@@ -126,7 +126,7 @@ then
                     -v $DICOM_PATH:/tmp/data/dicom \
                     -v $RESULT_PATH:/tmp/data/result \
                     --mount type=bind,source=$SCRIPT_PATH/.bashrc,target=/home/$HOME_NAME/.bashrc \
-                    -p 8080:5000 \
+                    -p 443:5000 \
                     $IMAGE_NAME /bin/bash"
              )
     Fun_EvalCmd "${lCmdList[*]}"
