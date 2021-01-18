@@ -117,5 +117,10 @@ async def pneu_inference(request):
         empty_response["message"] = "Pneumothorax inference error ({})".format(r.status_code)
         return response.json(empty_response)
 
+@app.route("/label", methods=['POST', 'GET'])
+async def get_label(request):
+    return response.text("pneumothorax_seg")
+
+
 if __name__ == "__main__":
     app.run(host = '0.0.0.0', port = 5000)
